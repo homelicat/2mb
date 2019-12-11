@@ -1,4 +1,5 @@
 # Upload
+    Код внутри строки (inline) `Hello world!`
     (inline) 'avrdude -c arduino -b 19200 -p m168 -F -P /dev/ttyUSB0 -U flash:w:devctrl.hex'
     (inline) 'avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:cpu.hex'
 
