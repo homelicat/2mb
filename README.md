@@ -1,6 +1,6 @@
 # Upload
-(inline) avrdude -c arduino -b 19200 -p m168 -F -P /dev/ttyUSB0 -U flash:w:devctrl.hex
-(inline) avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:cpu.hex
+(inline) 'avrdude -c arduino -b 19200 -p m168 -F -P /dev/ttyUSB0 -U flash:w:devctrl.hex'
+(inline) 'avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:cpu.hex'
 
 # Build
 avr-gcc -mmcu=atmega168pa -std=gnu11  -Os devctl.c -o devctl.o
