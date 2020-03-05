@@ -7,19 +7,26 @@ uint8_t rx_buf[16];
 uint8_t rx_last = 0;
 uint8_t led_status = 1;
 
-char welcome_str[] = "2MB 3.3 Hmundik";
-char basic_str[] = " BF";
+char welcome_str[] = "2MB 4.1 Hmundik";
+char basic_str[] = " Int";
 char reboot_str[] = " Reboot";
 char led_str[] = " Led";
 char led_on_off[] = "ON   OFF";
 char led_on[] = "<==";
 char led_off[] = "==>";
-char bf_error[] = "Error";
+char bf_error_1[] = "Error 1";
+char bf_error_2[] = "Error 2";
+char bf_error_3[] = "Error 3";
+char bf_error_4[] = "Error 4";
 char bf_complete[] = "Complete";
 
 
 char text[1024];
-uint8_t cpu[256] = {0};
+uint8_t mem[16] = {0};
+uint8_t reg_mem = 0;
+uint8_t reg_arga = 0;
+uint8_t reg_argb = 0;
+uint8_t reg_cond = 0;
 
 
 void text_clear()
@@ -206,77 +213,316 @@ void led()
 	};
 }
 
-uint8_t check()
+uint8_t is_hex(char x1,char x2)
 {
-	for (int i = 0; i<sizeof(text);i++)
+	if((((x1>='0')&&(x1<='9'))||((x1>='a')&&(x1<='f'))||((x1>='A')&&(x1<='F')))&&(((x2>='0')&&(x2<='9'))||((x2>='a')&&(x2<='f'))||((x2>='A')&&(x2<='F')))) 
 	{
-		if ((text[i]!=' ')&&(text[i]!='.')&&(text[i]!=',')&&(text[i]!='>')&&(text[i]!='<')&&(text[i]!='+')&&(text[i]!='-')&&(text[i]!='[')&&(text[i]!=']')&&(text[i]!='\n'))
-		{
-			return 0;
-		}
+		return 1;
 	}
-	return 1;
+	return 0;
+}
+
+uint8_t hex(char x1, char x2)
+{
+	uint8_t res = 0;
+	if (x1=='1') res+=0x10;
+	if (x1=='2') res+=0x20;
+	if (x1=='3') res+=0x30;
+	if (x1=='4') res+=0x40;
+	if (x1=='5') res+=0x50;
+	if (x1=='6') res+=0x60;
+	if (x1=='7') res+=0x70;
+	if (x1=='8') res+=0x80;
+	if (x1=='9') res+=0x90;
+	if (x1=='a') res+=0xa0;
+	if (x1=='b') res+=0xb0;
+	if (x1=='c') res+=0xc0;
+	if (x1=='d') res+=0xd0;
+	if (x1=='e') res+=0xe0;
+	if (x1=='f') res+=0xf0;
+	if (x1=='A') res+=0xa0;
+	if (x1=='B') res+=0xb0;
+	if (x1=='C') res+=0xc0;
+	if (x1=='D') res+=0xd0;
+	if (x1=='E') res+=0xe0;
+	if (x1=='F') res+=0xf0;
+	if (x2=='1') res+=0x1;
+	if (x2=='2') res+=0x2;
+	if (x2=='3') res+=0x3;
+	if (x2=='4') res+=0x4;
+	if (x2=='5') res+=0x5;
+	if (x2=='6') res+=0x6;
+	if (x2=='7') res+=0x7;
+	if (x2=='8') res+=0x8;
+	if (x2=='9') res+=0x9;
+	if (x2=='a') res+=0xa;
+	if (x2=='b') res+=0xb;
+	if (x2=='c') res+=0xc;
+	if (x2=='d') res+=0xd;
+	if (x2=='e') res+=0xe;
+	if (x2=='f') res+=0xf;
+	if (x2=='A') res+=0xa;
+	if (x2=='B') res+=0xb;
+	if (x2=='C') res+=0xc;
+	if (x2=='D') res+=0xd;
+	if (x2=='E') res+=0xe;
+	if (x2=='F') res+=0xf;
+	return res;
 }
 
 void execute()
 {
 	d_clear();
-	if (!check())
-	{
-		d_println(bf_error,0);
-		kb_read();
-		return;
-	} 
-	int ptr = 0;
-	int	brc = 0;
 	for (int i = 0;i<sizeof(text);i++)
 	{
-		if (text[i]=='>') ptr++;
-		if (text[i]=='<') ptr--;
-		if (text[i]=='+') cpu[ptr]++;
-		if (text[i]=='-') cpu[ptr]--;
-		if (text[i]=='.') 
+		if ((text[i]==' ')||(text[i]=='\n'))
 		{
-			d_print(cpu[ptr]);
-		}
-		if (text[i]==',') 
+			
+		} else
+		if ((text[i]=='m')&&(text[i+1]=='e')&&(text[i+2]=='m')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
 		{
-			cpu[ptr]=kb_read();
-		}
-		if (text[i] == '[') 
-		{
-			if (!cpu[ptr]) 
+			int j = 0;
+			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
+			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				brc++;
-				while (brc) 
-				{
-					i++;
-					if (text[i] == '[') brc++;
-					if (text[i] == ']') brc--;
-				}
-			} else continue;
-		} else if (text[i] == ']') 
-		{
-			if (!cpu[ptr])
-			{
-			 continue; 
-			} else 
-			{
-				if (text[i] == ']') brc++;
-				while (brc) 
-				{
-					i--;
-					if (text[i] == '[') brc--;
-					if (text[i] == ']') brc++;
-				}
-				i--;
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
 			}
+			reg_mem=hex(text[i+4+j],text[i+4+j+1]);
+			i+=j+4+2;
+		} else
+		if ((text[i]=='s')&&(text[i+1]=='t')&&(text[i+2]=='r')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
+			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			mem[reg_mem]=hex(text[i+4+j],text[i+4+j+1]);
+			i+=j+4+2;
+		} else
+		if ((text[i]=='o')&&(text[i+1]=='u')&&(text[i+2]=='t')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
+			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			d_set(mem[hex(text[i+4+j],text[i+4+j+1])]);
+			d_print(mem[reg_mem]);
+			i+=j+4+2;
+		} else
+		if ((text[i]=='m')&&(text[i+1]=='o')&&(text[i+2]=='v')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
+			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			mem[reg_mem]=mem[hex(text[i+4+j],text[i+4+j+1])];
+			i+=j+4+2;
+		} else
+		if ((text[i]=='i')&&(text[i+1]=='n')&&((text[i+2]==' ')||(text[i+2]=='\n')||(text[i+2]=='\0')))
+		{
+			uint8_t key = kb_read();
+			mem[reg_mem]=key;
+			i+=2;
+		} else
+		if ((text[i]=='a')&&(text[i+1]=='d')&&(text[i+2]=='d')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
+			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			mem[reg_mem]+=hex(text[i+4+j],text[i+4+j+1]);
+			i+=j+4+2;
+		} else
+		if ((text[i]=='s')&&(text[i+1]=='u')&&(text[i+2]=='b')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
+			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			mem[reg_mem]-=hex(text[i+4+j],text[i+4+j+1]);
+			i+=j+4+2;
+		} else
+		if ((text[i]=='j')&&(text[i+1]=='m')&&(text[i+2]=='p')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
+			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			uint8_t point = mem[hex(text[i+4+j],text[i+4+j+1])];
+			uint16_t addr = 0;
+			for (j = 0;j<sizeof(text);j++)
+			{
+				if((text[j]=='#')&&(point==hex(text[j+1],text[j+2])))
+				{
+					addr=j+3;
+				}
+			}
+			if(addr==0)
+			{
+				d_println(bf_error_3,0);
+				kb_read();
+				return;
+			}
+			i=addr;
+		} else
+		if ((text[i]=='a')&&(text[i+1]=='r')&&(text[i+2]=='g')&&(text[i+3]=='a')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
+			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			reg_arga = mem[hex(text[i+5+j],text[i+5+j+1])];
+			i+=j+5+2;
+		} else
+		if ((text[i]=='a')&&(text[i+1]=='r')&&(text[i+2]=='g')&&(text[i+3]=='b')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
+			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			reg_argb = mem[hex(text[i+5+j],text[i+5+j+1])];
+			i+=j+5+2;
+		} else
+		if ((text[i]=='c')&&(text[i+1]=='o')&&(text[i+2]=='n')&&(text[i+3]=='d')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
+			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			reg_cond = mem[hex(text[i+4+j],text[i+4+j+1])];
+			i+=j+5+2;
+		} else
+		if ((text[i]=='j')&&(text[i+1]=='c')&&((text[i+2]==' ')||(text[i+2]=='\n')||(text[i+2]=='\0')))
+		{
+			int j = 0;
+			while ((text[i+3+j]==' ')||(text[i+3+j]=='\n')) j++;
+			if ((!is_hex(text[i+3+j],text[i+3+j+1]))||((text[i+3+j+2]!=' ')&&(text[i+3+j+2]!='\n')&&(text[i+3+j+2]!='\0')))
+			{
+				d_println(bf_error_1,0);
+				kb_read();
+				return;
+			}
+			uint8_t point = mem[hex(text[i+4+j],text[i+4+j+1])];
+			uint16_t addr = 0;
+			i+=3+j+2;
+			for (j = 0;j<sizeof(text);j++)
+			{
+				if((text[j]=='#')&&(point==hex(text[j+1],text[j+2])))
+				{
+					addr=j+3;
+				}
+			}
+			if(addr==0)
+			{
+				d_println(bf_error_4,0);
+				kb_read();
+				return;
+			}
+			if (reg_cond==1)
+			{
+				if(!(reg_arga==reg_argb))
+				{
+					addr=i;
+				}
+			} else
+			if (reg_cond==2)
+			{
+				if(!(reg_arga!=reg_argb))
+				{
+					addr=i;
+				}
+			} else
+			if (reg_cond==3)
+			{
+				if(!(reg_arga>reg_argb))
+				{
+					addr=i;
+				}
+			} else
+			if (reg_cond==4)
+			{
+				if(!(reg_arga<reg_argb))
+				{
+					addr=i;
+				}
+			} else
+			if (reg_cond==5)
+			{
+				if(!(reg_arga>=reg_argb))
+				{
+					addr=i;
+				}
+			} else
+			if (reg_cond==6)
+			{
+				if(!(reg_arga<=reg_argb))
+				{
+					addr=i;
+				}
+			}
+			i=addr;
+		} else
+		if ((text[i]=='#')&&(is_hex(text[i+1],text[i+2]))&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			i+=3;
+		} else
+		if ((text[i]=='s')&&(text[i+1]=='t')&&(text[i+2]=='p')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			i=1023;
+		} else
+		if ((text[i]=='n')&&(text[i+1]=='o')&&(text[i+2]=='p')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			i+=4;
+		} else
+		{
+			d_println(bf_error_2,0);
+			kb_read();
+			return;
 		}
 	}
+	kb_read();
 	d_clear();
 	d_println(bf_complete,0);
 	kb_read();
-	for (int i = 0; i<256; i++) cpu[i]=0;	
+	for (int i = 0; i<16; i++) mem[i]=0;	
 }
 
 void bf()
