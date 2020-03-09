@@ -7,17 +7,16 @@ uint8_t rx_buf[16];
 uint8_t rx_last = 0;
 uint8_t led_status = 1;
 
-char welcome_str[] = "2MB 4.1 Hmundik";
-char basic_str[] = " Int";
+char welcome_str[] = "2MB 4.2 Hmundik";
+char busel_str[] = " Busel Int.";
 char reboot_str[] = " Reboot";
 char led_str[] = " Led";
 char led_on_off[] = "ON   OFF";
 char led_on[] = "<==";
 char led_off[] = "==>";
-char bf_error_1[] = "Error 1";
-char bf_error_2[] = "Error 2";
-char bf_error_3[] = "Error 3";
-char bf_error_4[] = "Error 4";
+char bf_error_hex[] = "Err: bad hex";
+char bf_error_label[] = "Err: no label";
+char bf_error_com[] = "Err: bad command";
 char bf_complete[] = "Complete";
 
 
@@ -285,7 +284,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -298,7 +297,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -311,7 +310,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -325,7 +324,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -344,7 +343,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -357,7 +356,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -370,7 +369,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -385,7 +384,7 @@ void execute()
 			}
 			if(addr==0)
 			{
-				d_println(bf_error_3,0);
+				d_println(bf_error_label,0);
 				kb_read();
 				return;
 			}
@@ -397,7 +396,7 @@ void execute()
 			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
 			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -410,7 +409,7 @@ void execute()
 			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
 			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -423,7 +422,7 @@ void execute()
 			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
 			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -436,7 +435,7 @@ void execute()
 			while ((text[i+3+j]==' ')||(text[i+3+j]=='\n')) j++;
 			if ((!is_hex(text[i+3+j],text[i+3+j+1]))||((text[i+3+j+2]!=' ')&&(text[i+3+j+2]!='\n')&&(text[i+3+j+2]!='\0')))
 			{
-				d_println(bf_error_1,0);
+				d_println(bf_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -452,7 +451,7 @@ void execute()
 			}
 			if(addr==0)
 			{
-				d_println(bf_error_4,0);
+				d_println(bf_error_label,0);
 				kb_read();
 				return;
 			}
@@ -513,7 +512,7 @@ void execute()
 			i+=4;
 		} else
 		{
-			d_println(bf_error_2,0);
+			d_println(bf_error_com,0);
 			kb_read();
 			return;
 		}
@@ -525,7 +524,7 @@ void execute()
 	for (int i = 0; i<16; i++) mem[i]=0;	
 }
 
-void bf()
+void busel()
 {
 	uint16_t kb;
 	uint16_t curs = 0;
@@ -604,7 +603,7 @@ void menu()
 	menu_l:
 	curs = 0;
 	d_clear();
-	d_println(basic_str,0);
+	d_println(busel_str,0);
 	d_println(led_str,16);
 	d_set(0);
 	d_print('>');
@@ -616,7 +615,7 @@ void menu()
 			d_clear();
 			if (curs == 0) 
 			{
-				d_println(basic_str,0);
+				d_println(busel_str,0);
 				d_println(led_str,16);
 			} else
 			{
@@ -632,7 +631,7 @@ void menu()
 			d_clear();
 			if (curs == 1) 
 			{
-				d_println(basic_str,0);
+				d_println(busel_str,0);
 				d_println(led_str,16);
 			} else
 			{
@@ -651,7 +650,7 @@ void menu()
 			}
 			else if (curs==0)
 			{
-				bf();
+				busel();
 				goto menu_l;
 			}	else if (curs==1)
 			{
