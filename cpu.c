@@ -7,17 +7,18 @@ uint8_t rx_buf[16];
 uint8_t rx_last = 0;
 uint8_t led_status = 1;
 
-char welcome_str[] = "2MB 4.2 Hmundik";
+char welcome_str[] = "2MB 4.4 Hmundik";
 char busel_str[] = " Busel Int.";
 char reboot_str[] = " Reboot";
 char led_str[] = " Led";
 char led_on_off[] = "ON   OFF";
 char led_on[] = "<==";
 char led_off[] = "==>";
-char bf_error_hex[] = "Err: bad hex";
-char bf_error_label[] = "Err: no label";
-char bf_error_com[] = "Err: bad command";
-char bf_complete[] = "Complete";
+char busel_error_hex[] = "Err: bad hex";
+char busel_error_label[] = "Err: no label";
+char busel_error_com[] = "Err: bad command";
+char busel_error_port[] = "Err: bad port";
+char busel_complete[] = "Complete";
 
 
 char text[1024];
@@ -26,6 +27,7 @@ uint8_t reg_mem = 0;
 uint8_t reg_arga = 0;
 uint8_t reg_argb = 0;
 uint8_t reg_cond = 0;
+uint8_t reg_port = 0;
 
 
 void text_clear()
@@ -284,7 +286,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_hex,0);
+				d_println(busel_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -297,7 +299,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_hex,0);
+				d_println(busel_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -310,7 +312,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_hex,0);
+				d_println(busel_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -324,7 +326,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_hex,0);
+				d_println(busel_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -343,7 +345,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_hex,0);
+				d_println(busel_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -356,7 +358,7 @@ void execute()
 			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
 			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
 			{
-				d_println(bf_error_hex,0);
+				d_println(busel_error_hex,0);
 				kb_read();
 				return;
 			}
@@ -365,17 +367,9 @@ void execute()
 		} else
 		if ((text[i]=='j')&&(text[i+1]=='m')&&(text[i+2]=='p')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
 		{
-			int j = 0;
-			while ((text[i+4+j]==' ')||(text[i+4+j]=='\n')) j++;
-			if ((!is_hex(text[i+4+j],text[i+4+j+1]))||((text[i+4+j+2]!=' ')&&(text[i+4+j+2]!='\n')&&(text[i+4+j+2]!='\0')))
-			{
-				d_println(bf_error_hex,0);
-				kb_read();
-				return;
-			}
-			uint8_t point = mem[hex(text[i+4+j],text[i+4+j+1])];
+			uint8_t point = mem[reg_mem];
 			uint16_t addr = 0;
-			for (j = 0;j<sizeof(text);j++)
+			for (int j = 0;j<sizeof(text);j++)
 			{
 				if((text[j]=='#')&&(point==hex(text[j+1],text[j+2])))
 				{
@@ -384,7 +378,7 @@ void execute()
 			}
 			if(addr==0)
 			{
-				d_println(bf_error_label,0);
+				d_println(busel_error_label,0);
 				kb_read();
 				return;
 			}
@@ -392,57 +386,25 @@ void execute()
 		} else
 		if ((text[i]=='a')&&(text[i+1]=='r')&&(text[i+2]=='g')&&(text[i+3]=='a')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
 		{
-			int j = 0;
-			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
-			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
-			{
-				d_println(bf_error_hex,0);
-				kb_read();
-				return;
-			}
-			reg_arga = mem[hex(text[i+5+j],text[i+5+j+1])];
-			i+=j+5+2;
+			reg_arga = mem[reg_mem];
+			i+=4;
 		} else
 		if ((text[i]=='a')&&(text[i+1]=='r')&&(text[i+2]=='g')&&(text[i+3]=='b')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
 		{
-			int j = 0;
-			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
-			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
-			{
-				d_println(bf_error_hex,0);
-				kb_read();
-				return;
-			}
-			reg_argb = mem[hex(text[i+5+j],text[i+5+j+1])];
-			i+=j+5+2;
+			reg_argb = mem[reg_mem];
+			i+=4;
 		} else
 		if ((text[i]=='c')&&(text[i+1]=='o')&&(text[i+2]=='n')&&(text[i+3]=='d')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
 		{
-			int j = 0;
-			while ((text[i+5+j]==' ')||(text[i+5+j]=='\n')) j++;
-			if ((!is_hex(text[i+5+j],text[i+5+j+1]))||((text[i+5+j+2]!=' ')&&(text[i+5+j+2]!='\n')&&(text[i+5+j+2]!='\0')))
-			{
-				d_println(bf_error_hex,0);
-				kb_read();
-				return;
-			}
-			reg_cond = mem[hex(text[i+4+j],text[i+4+j+1])];
-			i+=j+5+2;
+			reg_cond = mem[reg_mem];
+			i+=4;
 		} else
 		if ((text[i]=='j')&&(text[i+1]=='c')&&((text[i+2]==' ')||(text[i+2]=='\n')||(text[i+2]=='\0')))
 		{
-			int j = 0;
-			while ((text[i+3+j]==' ')||(text[i+3+j]=='\n')) j++;
-			if ((!is_hex(text[i+3+j],text[i+3+j+1]))||((text[i+3+j+2]!=' ')&&(text[i+3+j+2]!='\n')&&(text[i+3+j+2]!='\0')))
-			{
-				d_println(bf_error_hex,0);
-				kb_read();
-				return;
-			}
-			uint8_t point = mem[hex(text[i+4+j],text[i+4+j+1])];
+			uint8_t point = mem[reg_mem];
 			uint16_t addr = 0;
-			i+=3+j+2;
-			for (j = 0;j<sizeof(text);j++)
+			i+=2;
+			for (int j = 0;j<sizeof(text);j++)
 			{
 				if((text[j]=='#')&&(point==hex(text[j+1],text[j+2])))
 				{
@@ -451,7 +413,7 @@ void execute()
 			}
 			if(addr==0)
 			{
-				d_println(bf_error_label,0);
+				d_println(busel_error_label,0);
 				kb_read();
 				return;
 			}
@@ -511,15 +473,71 @@ void execute()
 		{
 			i+=4;
 		} else
+		if ((text[i]=='p')&&(text[i+1]=='o')&&(text[i+2]=='r')&&(text[i+3]=='t')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
 		{
-			d_println(bf_error_com,0);
+			if (mem[reg_mem]>2)
+			{
+				d_println(busel_error_port,0);
+				kb_read();
+				return;
+			}
+			reg_port = mem[reg_mem];
+			i+=4;
+		} else
+		if ((text[i]=='p')&&(text[i+1]=='o')&&(text[i+2]=='u')&&(text[i+3]=='t')&&((text[i+4]==' ')||(text[i+4]=='\n')||(text[i+4]=='\0')))
+		{
+			if (reg_port==0)
+			{
+				PORTB = mem[reg_mem];
+			} else
+			if (reg_port==1)
+			{
+				PORTC = mem[reg_mem];
+			} else
+			{
+				PORTD = mem[reg_mem];
+			}
+			i+=4;
+		} else
+		if ((text[i]=='p')&&(text[i+1]=='i')&&(text[i+2]=='n')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			if (reg_port==0)
+			{
+				mem[reg_mem] = PORTB;
+			} else
+			if (reg_port==1)
+			{
+				mem[reg_mem] = PORTC;
+			} else
+			{
+				mem[reg_mem] = PORTD;
+			}
+			i+=3;
+		} else
+		if ((text[i]=='d')&&(text[i+1]=='d')&&(text[i+2]=='r')&&((text[i+3]==' ')||(text[i+3]=='\n')||(text[i+3]=='\0')))
+		{
+			if (reg_port==0)
+			{
+				DDRB = mem[reg_mem];
+			} else
+			if (reg_port==1)
+			{
+				DDRC = mem[reg_mem];
+			} else
+			{
+				DDRD = mem[reg_mem];
+			}
+			i+=3;
+		} else
+		{
+			d_println(busel_error_com,0);
 			kb_read();
 			return;
 		}
 	}
 	kb_read();
 	d_clear();
-	d_println(bf_complete,0);
+	d_println(busel_complete,0);
 	kb_read();
 	for (int i = 0; i<16; i++) mem[i]=0;	
 }

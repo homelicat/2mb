@@ -1,9 +1,8 @@
 # Upload
-    avrdude -c arduino -b 19200 -p m168 -F -P /dev/ttyUSB0 -U flash:w:devctrl.hex
+    stm8flash -c stlinkv2 -p stm8s103f3 -w devctrl.ihx
     avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:cpu.hex
 
 # Build
-    avr-gcc -mmcu=atmega168pa -std=gnu11  -Os devctl.c -o devctl.o
+    sdcc --Werror --std-sdcc99 -mstm8 -DSTM8S103 -lstm8 -mstm8 --out-fmt-ihx ../devctrl.c
     avr-gcc -mmcu=atmega328p -std=gnu11  -Os cpu.c -o cpu.o
-    avr-objcopy -j .text -j .data -O ihex  devctrl.o  devctl.hex
     avr-objcopy -j .text -j .data -O ihex  cpu.o  cpu.hex
