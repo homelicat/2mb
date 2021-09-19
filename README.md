@@ -1,3 +1,14 @@
+# 2mb
+**Twórca:** lolikotek
+
+**Jezyk:** C
+
+**Data:** druga polowa 2019
+
+**Opis:**
+
+Projekt sklada się z komputera i programu. Komputer jest zrobiony na dwuch mikrokontrolerach: stm8s103f3 jak kontroler urządzen i atmega328p jak processor centralny. Oni kommunikują się między sobą za pomocą mojego protokołu, nadbudowy dla UART. Pisalem na C z bibliotekami standartowymi. Dla tego komputera zrobilem prosty interpretowany język z okolo assemblerną składnią.
+
 # Upload
     stm8flash -c stlinkv2 -p stm8s103f3 -w devctrl.ihx
     avrdude -c arduino -p m328p -P /dev/ttyACM0 -U flash:w:cpu.hex
